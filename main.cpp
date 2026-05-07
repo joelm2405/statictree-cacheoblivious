@@ -1,244 +1,152 @@
-#include <bits/stdc++.h>
+#include "StaticTree.h"
+#include "PointerBST.h"
+
+#include <iostream>
+#include <vector>
+#include <random>
+#include <chrono>
+#include <iomanip>
+#include <cstdint>
+
 using namespace std;
+using namespace chrono;
 
-struct Node {
-    int key;
-    int left;
-    int right;
+vector<int> generateKeys(int N) {
+    vector<int> keys;
+    keys.reserve(N);
 
-    Node(int k = 0) {
-        key = k;
-        left = -1;
-        right = -1;
-    }
-};
-
-class StaticTree {
-private:
-    vector<Node> normal;   // BST normal
-    vector<Node> tree;     // BST guardado en orden vEB
-    vector<int> h;
-
-    int normalRoot;
-    int root;
-
-    int buildBST(vector<int>& a, int l, int r) {
-        if (l > r) return -1;
-
-        int mid = (l + r) / 2;
-        int id = normal.size();
-
-        normal.push_back(Node(a[mid]));
-
-        normal[id].left = buildBST(a, l, mid - 1);
-        normal[id].right = buildBST(a, mid + 1, r);
-
-        return id;
+    for (int i = 0; i < N; i++) {
+        keys.push_back(i);
     }
 
-    int calcHeight(int u) {
-        if (u == -1) return 0;
+    return keys;
+}
 
-        int hl = calcHeight(normal[u].left);
-        int hr = calcHeight(normal[u].right);
+vector<int> generateQueries(int Q, int maxValue, int seed) {
+    vector<int> queries;
+    queries.reserve(Q);
 
-        h[u] = 1 + max(hl, hr);
-        return h[u];
+    mt19937 rng(seed);
+    uniform_int_distribution<int> dist(0, maxValue);
+
+    for (int i = 0; i < Q; i++) {
+        queries.push_back(dist(rng));
     }
 
-    void getRootsAtDepth(int u, int depth, vector<int>& roots) {
-        if (u == -1) return;
+    return queries;
+}
 
-        if (depth == 0) {
-            roots.push_back(u);
-            return;
-        }
+double elapsedMs(steady_clock::time_point start, steady_clock::time_point end) {
+    return duration_cast<microseconds>(end - start).count() / 1000.0;
+}
 
-        getRootsAtDepth(normal[u].left, depth - 1, roots);
-        getRootsAtDepth(normal[u].right, depth - 1, roots);
-    }
+double testStaticTree(const StaticTree& tree, const vector<int>& queries, int& foundCount) {
+    foundCount = 0;
 
-    void makeVEBOrder(int u, int heightLimit, vector<int>& order) {
-        if (u == -1 || heightLimit <= 0) return;
+    auto start = steady_clock::now();
 
-        heightLimit = min(heightLimit, h[u]);
-
-        if (heightLimit == 1) {
-            order.push_back(u);
-            return;
-        }
-
-        int topHeight = (heightLimit + 1) / 2;
-        int bottomHeight = heightLimit - topHeight;
-
-        // Primero se guarda la parte superior
-        makeVEBOrder(u, topHeight, order);
-
-        // Luego se buscan las raíces de las partes inferiores
-        vector<int> bottomRoots;
-        getRootsAtDepth(u, topHeight, bottomRoots);
-
-        // Finalmente se guardan esas partes inferiores
-        for (int r : bottomRoots) {
-            makeVEBOrder(r, bottomHeight, order);
+    for (int x : queries) {
+        if (tree.find(x)) {
+            foundCount++;
         }
     }
 
-    void buildVEBLayout() {
-        vector<int> order;
-        makeVEBOrder(normalRoot, h[normalRoot], order);
+    auto end = steady_clock::now();
 
-        vector<int> pos(normal.size(), -1);
+    return elapsedMs(start, end);
+}
 
-        for (int i = 0; i < (int)order.size(); i++) {
-            pos[order[i]] = i;
+double testPointerBST(const PointerBST& tree, const vector<int>& queries, int& foundCount) {
+    foundCount = 0;
+
+    auto start = steady_clock::now();
+
+    for (int x : queries) {
+        if (tree.find(x)) {
+            foundCount++;
         }
-
-        tree.resize(order.size());
-
-        for (int i = 0; i < (int)order.size(); i++) {
-            int old = order[i];
-
-            tree[i] = Node(normal[old].key);
-
-            if (normal[old].left != -1)
-                tree[i].left = pos[normal[old].left];
-
-            if (normal[old].right != -1)
-                tree[i].right = pos[normal[old].right];
-        }
-
-        root = pos[normalRoot];
     }
 
-public:
-    StaticTree(vector<int> a) {
-        normalRoot = -1;
-        root = -1;
+    auto end = steady_clock::now();
 
-        sort(a.begin(), a.end());
-        a.erase(unique(a.begin(), a.end()), a.end());
-
-        if (a.empty()) return;
-
-        normalRoot = buildBST(a, 0, (int)a.size() - 1);
-
-        h.assign(normal.size(), 0);
-        calcHeight(normalRoot);
-
-        buildVEBLayout();
-
-        vector<Node>().swap(normal);
-        vector<int>().swap(h);
-    }
-
-    bool find(int x) {
-        int u = root;
-
-        while (u != -1) {
-            if (x == tree[u].key) return true;
-
-            if (x < tree[u].key)
-                u = tree[u].left;
-            else
-                u = tree[u].right;
-        }
-
-        return false;
-    }
-
-    bool predecessor(int x, int& ans) {
-        int u = root;
-        bool found = false;
-
-        while (u != -1) {
-            if (tree[u].key < x) {
-                ans = tree[u].key;
-                found = true;
-                u = tree[u].right;
-            } else {
-                u = tree[u].left;
-            }
-        }
-
-        return found;
-    }
-
-    bool successor(int x, int& ans) {
-        int u = root;
-        bool found = false;
-
-        while (u != -1) {
-            if (tree[u].key > x) {
-                ans = tree[u].key;
-                found = true;
-                u = tree[u].left;
-            } else {
-                u = tree[u].right;
-            }
-        }
-
-        return found;
-    }
-
-    void printMemoryLayout() {
-        for (int i = 0; i < (int)tree.size(); i++) {
-            cout << tree[i].key << " ";
-        }
-        cout << "\n";
-    }
-
-    int countBlocksInSearch(int x, int B) {
-        int u = root;
-        set<int> blocks;
-
-        while (u != -1) {
-            blocks.insert(u / B);
-
-            if (x == tree[u].key) break;
-
-            if (x < tree[u].key)
-                u = tree[u].left;
-            else
-                u = tree[u].right;
-        }
-
-        return blocks.size();
-    }
-};
+    return elapsedMs(start, end);
+}
 
 int main() {
-    vector<int> keys = {
-        1, 2, 3, 4, 5, 6, 7, 8,
-        9, 10, 11, 12, 13, 14, 15
-    };
+    static_assert(sizeof(int) == 4, "El tipo int debe ser de 32 bits.");
 
-    StaticTree st(keys);
+    const int N = 1000000;   // Numero de elementos
+    const int Q = 1000000;   // Numero de consultas
+    const int T = 5;         // Numero de experimentos
 
-    cout << "Orden en memoria vEB:\n";
-    st.printMemoryLayout();
+    // Este parametro no se usa para construir el arbol.
+    // El static tree es cache-oblivious, por eso no depende de B.
+    const int B = 64;
 
-    int x = 11;
+    cout << fixed << setprecision(3);
 
-    if (st.find(x))
-        cout << x << " esta en el arbol\n";
-    else
-        cout << x << " no esta en el arbol\n";
+    cout << "Parametros del experimento\n";
+    cout << "N = " << N << " elementos\n";
+    cout << "Q = " << Q << " consultas\n";
+    cout << "T = " << T << " experimentos\n";
+    cout << "B = " << B << " block size target\n";
+    cout << "Tipo de dato: int (" << sizeof(int) * 8 << " bits)\n";
+    cout << "----------------------------------\n";
 
-    int ans;
+    vector<int> keys = generateKeys(N);
 
-    if (st.predecessor(x, ans))
-        cout << "Predecesor: " << ans << "\n";
-    else
-        cout << "No tiene predecesor\n";
+    double totalStaticBuild = 0.0;
+    double totalBSTBuild = 0.0;
+    double totalStaticSearch = 0.0;
+    double totalBSTSearch = 0.0;
 
-    if (st.successor(x, ans))
-        cout << "Sucesor: " << ans << "\n";
-    else
-        cout << "No tiene sucesor\n";
+    for (int t = 1; t <= T; t++) {
+        cout << "Experimento " << t << " de " << T << "\n";
 
-    cout << "Bloques tocados con B = 4: ";
-    cout << st.countBlocksInSearch(x, 4) << "\n";
+        vector<int> queries = generateQueries(Q, 2 * N, 12345 + t);
+
+        auto startBuildStatic = steady_clock::now();
+        StaticTree staticTree(keys);
+        auto endBuildStatic = steady_clock::now();
+
+        double staticBuildMs = elapsedMs(startBuildStatic, endBuildStatic);
+
+        auto startBuildBST = steady_clock::now();
+        PointerBST pointerBST(keys);
+        auto endBuildBST = steady_clock::now();
+
+        double bstBuildMs = elapsedMs(startBuildBST, endBuildBST);
+
+        int foundStatic = 0;
+        int foundBST = 0;
+
+        double staticSearchMs = testStaticTree(staticTree, queries, foundStatic);
+        double bstSearchMs = testPointerBST(pointerBST, queries, foundBST);
+
+        totalStaticBuild += staticBuildMs;
+        totalBSTBuild += bstBuildMs;
+        totalStaticSearch += staticSearchMs;
+        totalBSTSearch += bstSearchMs;
+
+        cout << "Build StaticTree: " << staticBuildMs << " ms\n";
+        cout << "Build PointerBST: " << bstBuildMs << " ms\n";
+        cout << "Search StaticTree: " << staticSearchMs << " ms\n";
+        cout << "Search PointerBST: " << bstSearchMs << " ms\n";
+        cout << "Encontrados StaticTree: " << foundStatic << "\n";
+        cout << "Encontrados PointerBST: " << foundBST << "\n";
+
+        if (foundStatic != foundBST) {
+            cout << "advertencia: los resultados no coinciden.\n";
+        }
+
+        cout << "----------------------------------\n";
+    }
+
+    cout << "Promedios finales\n";
+    cout << "Promedio build StaticTree: " << totalStaticBuild / T << " ms\n";
+    cout << "Promedio build PointerBST: " << totalBSTBuild / T << " ms\n";
+    cout << "Promedio search StaticTree: " << totalStaticSearch / T << " ms\n";
+    cout << "Promedio search PointerBST: " << totalBSTSearch / T << " ms\n";
 
     return 0;
 }

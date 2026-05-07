@@ -16,7 +16,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/3.28.1/CMakeSystem.cmake"
+			"path" : "cmake-build-release/CMakeFiles/3.28.1/CMakeSystem.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -285,7 +285,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/3.28.1/CMakeCCompiler.cmake"
+			"path" : "cmake-build-release/CMakeFiles/3.28.1/CMakeCCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -539,7 +539,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/3.28.1/CMakeCXXCompiler.cmake"
+			"path" : "cmake-build-release/CMakeFiles/3.28.1/CMakeCXXCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -613,7 +613,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/3.28.1/CMakeRCCompiler.cmake"
+			"path" : "cmake-build-release/CMakeFiles/3.28.1/CMakeRCCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -692,7 +692,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/3.28.1/CMakeCCompiler.cmake"
+			"path" : "cmake-build-release/CMakeFiles/3.28.1/CMakeCCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -791,7 +791,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "cmake-build-debug/CMakeFiles/3.28.1/CMakeCXXCompiler.cmake"
+			"path" : "cmake-build-release/CMakeFiles/3.28.1/CMakeCXXCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -802,7 +802,7 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "C:/Users/ASUS/Documents/statictree-cacheoblivious/cmake-build-debug",
+		"build" : "C:/Users/ASUS/Documents/statictree-cacheoblivious/cmake-build-release",
 		"source" : "C:/Users/ASUS/Documents/statictree-cacheoblivious"
 	},
 	"version" : 
