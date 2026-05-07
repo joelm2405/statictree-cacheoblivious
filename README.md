@@ -1,5 +1,10 @@
 # Cache-Oblivious Static Search Tree
 
+### Integrantes:
+- Joel David Miguel Fernandez - 202310186
+
+- Ary Werner Aaron Rojas Durand - 202310366
+
 ## Descripción general
 
 En este proyecto implementé un **cache-oblivious static search tree** y lo comparé contra un **BST tradicional implementado con punteros**.
